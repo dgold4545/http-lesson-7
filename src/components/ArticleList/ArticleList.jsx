@@ -1,12 +1,11 @@
+import React from "react";
+import Article from "../Article/Article";
+
 export default function ArticleList({ items }) {
   return (
     <ul>
-      {items.map(({ objectID, url, title }) => (
-        <li key={objectID}>
-          <a href={url} target="_blank" rel="noopener noreferrer">
-            {title}
-          </a>
-        </li>
+      {items.map((item) => (
+        <Article key={item.objectID} itemData={item} />
       ))}
     </ul>
   );
