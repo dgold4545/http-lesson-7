@@ -1,50 +1,70 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import "./App.css";
+
+import { fetchUser } from "../../githubAPI";
+
 import ArticleList from "../ArticleList/ArticleList";
 
 import { ProgressBar } from "react-loader-spinner";
 
+import React from "react";
+
+import style from "./App.module.css";
+import { Field, Form, Formik } from "formik";
+
 export default function App() {
-  const [articles, setArticles] = useState([]);
+  const [user, setUser] = useState(null);
+
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    async function fetchArticles() {
+  const [error, setError] = useState(false);
+
+  const handleSearch = (values, actions) => {
+    const fetchGithubUser = async () => {
       try {
         setLoading(true);
+        setUser(null);
 
-        const response = await axios.get(
-          "https://hn.algolia.com/api/v1/search?query=react"
-        );
+        setError(false);
+        const response = await fetchUser(values.username);
 
-        setArticles(response.data.hits);
+        setUser(response.data);
       } catch (error) {
+        setError(true);
       } finally {
         setLoading(false);
       }
-    }
+    };
 
-    fetchArticles();
-  }, []);
+    fetchGithubUser();
+
+    actions.resetForm();
+  };
 
   return (
-    <div>
-      <h1>Latest articles</h1>
-
-      {loading && (
-        <ProgressBar
-          visible={true}
-          height="180"
-          width="280"
-          color="#4fa94d"
-          ariaLabel="progress-bar-loading"
-          wrapperStyle={{}}
-          wrapperClass=""
-        />
+    <div className={style.container}>
+      <h1>HTTP requests in React</h1>
+      <Formik initialValues={{ username: "" }} onSubmit={handleSearch}>
+        <Form>
+          <Field type="text" name="username" />
+          <button type="submit">Search</button>
+        </Form>
+      </Formik>
+      {loading && <ProgressBar />}
+      {error && <p>OOPS.... Sorry about this bad request</p>}
+      {user && (
+        <div>
+          <img src={user.avatar_url} alt={user.name} />
+          <p>{user.company}</p>
+          <p>{user.followers}</p>
+          <p>{user.name}</p>
+          <p>{user.login}</p>
+        </div>
       )}
-
-      {articles.length > 0 && <ArticleList items={articles} />}
     </div>
   );
 }
+
+//"https://api.github.com/users/USERNAME"
+//luxplanjay
+//dgold4545
